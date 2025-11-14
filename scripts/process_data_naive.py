@@ -20,8 +20,9 @@ def main():
     logger.debug("Attatching to raw data directory")
     raw_dir = Path(__file__).parent.parent / "data" / "raw"
 
-    logger.debug("Attatching to processed data directory")
-    processed_dir = Path(__file__).parent.parent / "data" / "processed"
+    logger.debug("Attatching to naive processed data directory")
+    processed_dir = Path(__file__).parent.parent / "data" / "naive_processed"
+    processed_dir.mkdir(parents=True, exist_ok=True)
 
     logger.debug("Retrieving prices.csv")
     prices = raw_dir / "prices.csv"

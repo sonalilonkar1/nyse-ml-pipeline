@@ -43,7 +43,7 @@ def main():
         logger.debug(f"Processing features for window size {window_size}")
         for i in range(1, window_size + 1):
             for feat in FEATURES:
-                df_temp[f"{feat}_t"] = df_temp.groupby("symbol")[feat].shift(i)
+                df_temp[f"{feat}_t-{i}"] = df_temp.groupby("symbol")[feat].shift(i)
 
         logger.debug(f"Creating final df for window size {window_size}")
         df_temp = df_temp.dropna()

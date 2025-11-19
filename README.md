@@ -6,8 +6,8 @@ This repository contains the raw data but a script must be run to
 obtain the processed data. From the root director run:
 
 ```bash
-chmod +x scripts/preprocess_data.py
-./scripts/preprocess_data.py
+chmod +x scripts/process_data_full.py
+./scripts/process_data_full.py
 ```
 
 The first command ensures that the script is executable and the second command runs 

@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 import pandas as pd
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 from models import get_model
 
@@ -22,6 +23,14 @@ def load_fold_data(window: int, fold: int) -> tuple:
     return X_train, y_train, X_test, y_test
 
 
+def compute_metrics(y_true: pd.DataFrame, y_pred: pd.DataFrame) -> dict:
+    return {
+        "mse": mean_squared_error(y_true, y_pred),
+        "mae": mean_absolute_error(y_true, y_pred),
+        "r2": r2_score(y_true, y_pred),
+    }
+
+
 def run_cross_validation(
     model_config: dict, windows: list[int] = [2, 3, 4, 5]
 ) -> pd.DataFrame:
@@ -38,7 +47,7 @@ def run_cross_validation(
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
 
-            metrics = compute_metrics(y_pred, y_test)
+            metrics = compute_metrics(y_test, y_pred)
             results.append(
                 {
                     "model": model_name,

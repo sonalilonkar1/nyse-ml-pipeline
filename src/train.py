@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from models import get_model
+
 
 logger = logging.getLogger(__name__)
 

@@ -40,7 +40,7 @@ def main():
 
     logging.info("Running cross validation...")
     for model_conf in config["models"]:
-        results_df = run_cross_validation(model_conf)
+        results_df = run_cross_validation(model_conf, config["windows"])
         print(results_df.head())
 
 

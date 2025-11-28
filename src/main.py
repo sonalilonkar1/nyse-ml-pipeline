@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from src.train import run_cross_validation
-from src.utils import load_config
+from src.utils import load_config, summarize_results
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,7 +41,9 @@ def main():
     logging.info("Running cross validation...")
     for model_conf in config["models"]:
         results_df = run_cross_validation(model_conf, config["windows"])
-        print(results_df.head())
+        summary_df = summarize_results(results_df)
+
+        print(summary_df)
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from src.train import run_cross_validation
-from src.utils import load_config, summarize_results
+from src.utils import load_config, save_results, summarize_results
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,12 +38,24 @@ def main():
 
     logging.info(f"Using {config['config_name']} config...")
 
-    logging.info("Running cross validation...")
+    logging.info("Training all models...")
     for model_conf in config["models"]:
+        logging.info(f"Running cross validation for {model_conf['name']}...")
         results_df = run_cross_validation(model_conf, config["windows"])
         summary_df = summarize_results(results_df)
 
-        print(summary_df)
+        logging.info(f"{model_conf['name']} sumary:\n{summary_df}")
+
+        logging.info(f"Saving results for {model_conf['name']}")
+        save_results(
+            results_df,
+            summary_df,
+            model_conf,
+            config["config_name"],
+            args.results_dir,
+        )
+
+    logging.info("Done!")
 
 
 if __name__ == "__main__":

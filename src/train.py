@@ -40,7 +40,7 @@ def run_cross_validation(
 
     for window in windows:
         for fold in range(N_FOLDS):
-            logger.info(f"Training {model_name} | {window=} | {fold=}")
+            logger.debug(f"Training {model_name} | {window=} | {fold=}")
 
             X_train, y_train, X_test, y_test = load_fold_data(window, fold)
             model = get_model(model_name, model_params)

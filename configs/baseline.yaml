@@ -3,5 +3,8 @@ windows: [2, 3, 4, 5]
 models:
   - name: linear_regression
     params: {}
+  - name: polynomial_regression
+    params:
+      degree: 2
 metrics: [mse, mae, r2]
 save_models: false

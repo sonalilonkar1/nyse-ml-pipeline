@@ -1,0 +1,21 @@
+config_name: xgb_lstm_experiments
+windows: [2, 3, 4, 5]
+models:
+  - name: xgboost_regressor
+    params:
+      n_estimators: 500
+      learning_rate: 0.05
+      max_depth: 6
+      subsample: 0.7
+      colsample_bytree: 0.8
+      objective: reg:squarederror
+  - name: lstm_regressor
+    params:
+      hidden_size: 128
+      num_layers: 2
+      dropout: 0.2
+      epochs: 10
+      batch_size: 256
+      learning_rate: 0.001
+metrics: [mse, mae, r2]
+save_models: true

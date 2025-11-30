@@ -78,10 +78,15 @@ conda activate cmpe257
 
 ## Running the Pipeline
 
-Make all scripts executable:
+You can either run each step manually (below) or use the automation helpers introduced in this update:
+
+- `run_all_linear.sh`: loops through all windows 2-5 and folds 0-4 with `scripts/train_linear.py`.
+- `Makefile`: provides shortcuts such as `make normalize`, `make train_linear`, `make aggregate`, `make report`, and `make full` (runs the complete chain).
+
+Make helper scripts executable once:
 
 ```bash
-chmod +x scripts/*.py
+chmod +x scripts/*.py run_all_linear.sh
 ```
 
 ### Step 1: Explore Raw Data
@@ -136,6 +141,40 @@ python scripts/full_data_exploration.py
 
 This prints statistics on the processed/normalized data and generates visualization plots.
 
+### Step 5: Train Baseline Linear Models (all windows/folds)
+
+```bash
+./run_all_linear.sh
+# or equivalently
+make train_linear
+```
+
+This script calls `scripts/train_linear.py` for every window/fold combination and stores:
+- Models in `models/linear_regression_*` (or ridge variants)
+- Metrics JSON files in `artifacts/metrics_window_*_fold_*.json`
+- Prediction plots in `reports/figs/`
+
+### Step 6: Train Extra Models (RF / GBR / MLP)
+
+```bash
+python scripts/train_tree_nn.py --window 3 --fold 0 --model rf --params '{"n_estimators":500}'
+```
+
+Use `--model gbr` or `--model mlp` with appropriate JSON parameters to train additional regressors on any window/fold.
+
+### Step 7: Aggregate Metrics and Build Reports
+
+```bash
+python scripts/aggregate_metrics.py     # writes reports/metrics_summary.csv
+python scripts/report_plots.py          # creates reports/model_report.md + RMSE plot
+```
+
+To tune hyperparameters on any split:
+
+```bash
+python scripts/grid_search.py --window 3 --fold 0 --model ridge --param-grid '{"alpha":[0.1,1,10]}'
+```
+
 ### Optional: Process Naive Data (Quick Baseline)
 
 ```bash
@@ -146,14 +185,33 @@ This creates a simple processed dataset (without walk-forward validation) for qu
 
 ---
 
+### Config-Driven Training (`src/main.py`)
+
+Use the orchestrator in `src/main.py` to train every model listed in a YAML config and save detailed results under `results/`.
+
+```bash
+# Baseline linear + polynomial regression
+python -m src.main --config configs/baseline.yaml
+
+# Advanced XGBoost + LSTM experiments (saves fitted models)
+python -m src.main --config configs/xgb_lstm.yaml
+```
+
+Config anatomy:
+- `config_name`: label for the experiment folder inside `results/`.
+- `windows`: sliding-window sizes to iterate over.
+- `models`: collection of `{name, params}` entries. Available names now include `linear_regression`, `polynomial_regression`, `xgboost_regressor`, and `lstm_regressor`.
+- `save_models`: toggle persistence of trained estimators.
+
+Add more configs (e.g., `configs/<experiment>.yaml`) to sweep different hyperparameters or estimators—the main function will automatically pick them up once the model is registered in `models/__init__.py`.
+
+---
+
 ## Quick Start (All at Once)
 
 ```bash
-chmod +x scripts/*.py
-python scripts/initial_data_exploration.py
-python scripts/process_data_full.py
-python scripts/build_pipeline.py
-python scripts/full_data_exploration.py
+chmod +x scripts/*.py run_all_linear.sh
+make full   # runs normalize -> train_linear -> train_extra -> aggregate -> report
 ```
 
 ---
@@ -166,7 +224,12 @@ scripts/
 ├── process_data_full.py          # Full processing with walk-forward validation
 ├── process_data_naive.py         # Simple baseline processing
 ├── full_data_exploration.py      # Explore processed data
-└── build_pipeline.py             # Normalize data with StandardScaler
+├── build_pipeline.py             # Normalize data with StandardScaler
+├── train_linear.py               # Ridge / LinearRegression baseline trainer
+├── train_tree_nn.py              # RandomForest / GradientBoosting / MLP trainer
+├── aggregate_metrics.py          # Combine metrics JSON files into CSV summary
+├── report_plots.py               # Generate RMSE comparison plot + markdown
+└── grid_search.py                # Hyperparameter sweeps per window/fold
 
 data/
 ├── raw/                          # Raw Kaggle data
@@ -183,12 +246,18 @@ reports/                          # Results and analysis
 Once normalized data is ready (`data/normalized/`), you can:
 
 1. **Train baseline models** (Linear Regression, Random Forest, etc.)
-2. **Use cross-validation** to find optimal hyperparameters
-3. **Generate graphs** showing:
+   - `./run_all_linear.sh` or `make train_linear`
+   - `python scripts/train_tree_nn.py --model rf|gbr|mlp ...`
+2. **Use cross-validation / grid search** to tune hyperparameters
+   - `python scripts/grid_search.py --model ridge --param-grid '{"alpha":[0.1,1,10]}'`
+3. **Aggregate and visualize metrics**:
+   - `python scripts/aggregate_metrics.py`
+   - `python scripts/report_plots.py`
+4. **Generate graphs** showing:
    - Parameter tuning results
    - Model performance on eval set
    - Predictions vs actual prices
-4. **Compare models** and document results
+5. **Compare models** and document results using `reports/model_report.md`
 
 Use the normalized data structure:
 ```python
@@ -214,6 +283,8 @@ y_eval = pd.read_csv(f"data/normalized/window_{window_size}/y_eval.csv")
 - `pandas` - Data manipulation
 - `scikit-learn` - ML preprocessing and models
 - `matplotlib` - Plotting and visualization
+- `xgboost` - Gradient-boosted trees (macOS users: `brew install libomp` if you hit runtime loader errors)
+- `torch` - Needed for `lstm_regressor` (install a wheel compatible with your Python version or build from source)
 - `python-dateutil`, `pytz`, `tzdata` - Date/time handling
 
 See `requirements.txt` for specific versions.

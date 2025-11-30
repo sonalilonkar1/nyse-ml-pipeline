@@ -1,6 +1,10 @@
+"""Model registry for experiment configs."""
+
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
+
+from .lstm import LSTMRegressor
 
 
 def _create_polynomial_regression(degree=2, **kwargs):
@@ -11,9 +15,27 @@ def _create_polynomial_regression(degree=2, **kwargs):
     ])
 
 
+def _create_xgboost_regressor(**kwargs):
+    try:  # Local import to keep dependency optional until needed
+        from xgboost import XGBRegressor
+    except ImportError as exc:  # pragma: no cover - depends on optional dep
+        raise ImportError(
+            "xgboost is required for the 'xgboost_regressor'. Install it via pip install xgboost."
+        ) from exc
+
+    try:
+        return XGBRegressor(**kwargs)
+    except Exception as exc:
+        raise RuntimeError(
+            "Failed to initialize XGBRegressor. Ensure system libraries such as libomp are installed."
+        ) from exc
+
+
 MODEL_REGISTRY = {
     "linear_regression": LinearRegression,
     "polynomial_regression": _create_polynomial_regression,
+    "xgboost_regressor": _create_xgboost_regressor,
+    "lstm_regressor": LSTMRegressor,
 }
 
 

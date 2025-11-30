@@ -4,3 +4,8 @@ data/full_processed/
 data/naive_processed/
 data/normalized/
 __pycache__/
+artifacts/
+models/*.pkl
+reports/figs/
+results/
+

@@ -14,14 +14,8 @@ def save_results(
     results_df: pd.DataFrame,
     summary_df: pd.DataFrame,
     model_config: dict,
-    experiment_name: str,
-    results_dir: Path,
+    model_dir: Path,
 ) -> None:
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    model_name = model_config["name"]
-
-    # Organize by model first, then by experiment timestamp
-    model_dir = results_dir / model_name / f"{experiment_name}_{timestamp}"
     model_dir.mkdir(parents=True, exist_ok=True)
 
     results_df.to_csv(model_dir / "results.csv", index=False)

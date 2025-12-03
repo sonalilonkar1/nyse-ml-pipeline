@@ -1,27 +1,6 @@
 config_name: full_experiments
 windows: [2, 3, 4, 5]
 models:
-  - name: linear_regression
-    params: {}
-  - name: polynomial_regression
-    params:
-      degree: 2
-  - name: random_forest_regressor
-    params:
-      n_estimators: 300
-      max_depth: 12
-      random_state: 42
-  - name: gradient_boosting_regressor
-    params:
-      n_estimators: 200
-      learning_rate: 0.1
-      max_depth: 6
-      random_state: 42
-  - name: mlp_regressor
-    params:
-      hidden_layer_sizes: [128, 64]
-      max_iter: 500
-      random_state: 42
   - name: xgboost_regressor
     params:
       n_estimators: 500

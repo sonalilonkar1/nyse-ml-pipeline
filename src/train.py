@@ -160,7 +160,7 @@ def run_evaluation(
     experiment_dir: Path = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Load trained models and evaluate on eval set."""
-    results = []
+    all_results = []
     model_name = model_config["name"]
     train_dir = experiment_dir / "train"
 
@@ -174,17 +174,37 @@ def run_evaluation(
         X_eval, y_eval, dates_eval = load_eval_data(window)
 
         y_pred = model.predict(X_eval)
-        metrics = compute_metrics(y_eval, y_pred)
 
-        results.append(
+        window_results = pd.DataFrame(
             {
                 "model": model_name,
                 "window": window,
-                "model_path": str(model_path),
-                **metrics,
+                "date": dates_eval.squeeze(),
+                "predicted": y_pred,
+                "target": y_eval,
+            }
+        )
+        all_results.append(window_results)
+
+    results_df = pd.concat(all_results, ignore_index=True)
+    summary_df = summarize_eval_results(results_df)
+    return results_df, summary_df
+
+
+def summarize_eval_results(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Compute metrics per model/window from predictions."""
+
+    def calc_metrics(group):
+        return pd.Series(
+            {
+                "mse": mean_squared_error(group["target"], group["predicted"]),
+                "mae": mean_absolute_error(group["target"], group["predicted"]),
+                "r2": r2_score(group["target"], group["predicted"]),
             }
         )
 
-    results_df = pd.DataFrame(results)
-    summary_df = results_df.drop(columns=["model_path"])
-    return results_df, summary_df
+    return (
+        results_df.groupby(["model", "window"])
+        .apply(calc_metrics, include_groups=False)
+        .reset_index()
+    )

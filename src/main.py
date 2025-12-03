@@ -3,19 +3,25 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from src.train import run_cross_validation
-from src.utils import load_config, save_results, summarize_results
+from src.train import run_cross_validation, run_training, run_evaluation
+from src.utils import (
+    load_config,
+    save_cv_summary,
+    save_train_results,
+    save_eval_results,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def main():
-    logging.info("Starting main...")
-    logging.info("Parsing arguments...")
+def get_experiment_dir(results_dir: Path, model_name: str, config_name: str) -> Path:
+    return results_dir / model_name / config_name
 
+
+def main():
     parser = argparse.ArgumentParser(
-        description="Train and evaluate common ML algorithms on a stock market prediction task!"
+        description="Train and evaluate ML models on stock market prediction."
     )
     parser.add_argument(
         "--config",
@@ -27,38 +33,60 @@ def main():
         "--results-dir",
         type=Path,
         default=Path("results"),
-        help="Optional Path to a results directory.",
+        help="Path to results directory.",
+    )
+    parser.add_argument(
+        "--tune",
+        action="store_true",
+        help="Run cross-validation to evaluate hyperparameters.",
+    )
+    parser.add_argument(
+        "--train",
+        action="store_true",
+        help="Train model on full training set and save.",
+    )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Evaluate most recent trained model on eval set.",
     )
     args = parser.parse_args()
 
-    logging.info(f"Config path: {args.config}")
-    logging.info(f"Results dir: {args.results_dir}")
+    if not any([args.tune, args.train, args.test]):
+        parser.error("At least one of --tune, --train, or --test is required.")
 
-    logger.info("Loading config...")
     config = load_config(args.config)
-    logging.info(f"Using {config['config_name']} config...")
+    config_name = config["config_name"]
+    windows = config["windows"]
 
-    logging.info("Training all models...")
+    logger.info(f"Using config: {config_name}")
+
     for model_conf in config["models"]:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_dir = (
-            args.results_dir
-            / model_conf["name"]
-            / f"{config['config_name']}_{timestamp}"
-        )
+        model_name = model_conf["name"]
+        experiment_dir = get_experiment_dir(args.results_dir, model_name, config_name)
 
-        logging.info(f"Running cross validation for {model_conf['name']}...")
-        results_df = run_cross_validation(
-            model_conf, config["windows"], save_dir=model_dir
-        )
+        if args.tune:
+            logger.info(f"Running cross-validation for {model_name}...")
+            summary_df = run_cross_validation(model_conf, windows)
+            save_cv_summary(summary_df, model_conf, experiment_dir)
+            logger.info(f"CV summary:\n{summary_df}")
 
-        summary_df = summarize_results(results_df)
-        logging.info(f"{model_conf['name']} summary:\n{summary_df}")
+        if args.train:
+            logger.info(f"Training {model_name} on full training set...")
+            results_df, summary_df, model_paths = run_training(
+                model_conf, windows, experiment_dir
+            )
+            save_train_results(results_df, summary_df, model_conf, experiment_dir)
+            logger.info(f"Training summary:\n{summary_df}")
+            logger.info(f"Models saved: {[str(p) for p in model_paths]}")
 
-        logging.info(f"Saving results for {model_conf['name']}")
-        save_results(results_df, summary_df, model_conf, model_dir)
+        if args.test:
+            logger.info(f"Evaluating {model_name}...")
+            results_df, summary_df = run_evaluation(model_conf, windows, experiment_dir)
+            save_eval_results(results_df, summary_df, experiment_dir)
+            logger.info(f"Evaluation summary:\n{summary_df}")
 
-    logging.info("Done!")
+    logger.info("Done!")
 
 
 if __name__ == "__main__":

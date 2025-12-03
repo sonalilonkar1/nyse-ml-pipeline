@@ -1,9 +1,9 @@
 import argparse
 import logging
-from datetime import datetime
 from pathlib import Path
 
 from src.train import run_cross_validation, run_training, run_evaluation
+from src.generate_results import generate_all_plots
 from src.utils import (
     load_config,
     save_cv_summary,
@@ -50,10 +50,15 @@ def main():
         action="store_true",
         help="Evaluate most recent trained model on eval set.",
     )
+    parser.add_argument(
+        "--plot",
+        action="store_true",
+        help="Generate plots for all evaluated models.",
+    )
     args = parser.parse_args()
 
-    if not any([args.tune, args.train, args.test]):
-        parser.error("At least one of --tune, --train, or --test is required.")
+    if not any([args.tune, args.train, args.test, args.plot]):
+        parser.error("At least one of --tune, --train, --test, or --plot is required.")
 
     config = load_config(args.config)
     config_name = config["config_name"]
@@ -85,6 +90,10 @@ def main():
             results_df, summary_df = run_evaluation(model_conf, windows, experiment_dir)
             save_eval_results(results_df, summary_df, experiment_dir)
             logger.info(f"Evaluation summary:\n{summary_df}")
+
+    if args.plot:
+        logger.info("Generating plots...")
+        generate_all_plots(args.results_dir, config_name)
 
     logger.info("Done!")
 

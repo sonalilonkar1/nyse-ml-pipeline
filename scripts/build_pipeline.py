@@ -92,14 +92,11 @@ def normalize_eval_data(window_size, pipeline):
     Returns:
         Tuple of (X_eval_normalized, y_eval, dates_eval)
     """
-    X_eval_file = PROCESSED_DATA_DIR / f"X_eval_window_{window_size}.csv"
-    y_eval_file = PROCESSED_DATA_DIR / f"y_eval_window_{window_size}.csv"
-
-    X_eval = pd.read_csv(X_eval_file)
-    y_eval = pd.read_csv(y_eval_file)
-
-    # Extract dates before normalization
-    dates_eval = X_eval.pop("date")
+    X_eval = pd.read_csv(PROCESSED_DATA_DIR / f"X_eval_window_{window_size}.csv")
+    y_eval = pd.read_csv(PROCESSED_DATA_DIR / f"y_eval_window_{window_size}.csv")
+    dates_eval = pd.read_csv(
+        PROCESSED_DATA_DIR / f"dates_eval_window_{window_size}.csv"
+    )
 
     X_eval_normalized = pipeline.transform(X_eval)
     X_eval_normalized = pd.DataFrame(X_eval_normalized, columns=X_eval.columns)

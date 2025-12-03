@@ -6,5 +6,6 @@ models:
   - name: polynomial_regression
     params:
       degree: 2
+      alpha: 10
 metrics: [mse, mae, r2]
 save_models: false

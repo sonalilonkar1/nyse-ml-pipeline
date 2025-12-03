@@ -6,6 +6,7 @@ models:
   - name: polynomial_regression
     params:
       degree: 2
+      alpha: 10
   - name: random_forest_regressor
     params:
       n_estimators: 300

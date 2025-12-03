@@ -29,7 +29,7 @@ Run this in a cell:
 ### Step 4: Run the Training
 Execute:
 ```
-!python -m src.main --config configs/xgb_lstm.yaml
+!python -m src.main --config configs/all_models.yaml
 ```
 - This will train XGBoost and LSTM with cross-validation.
 - Expected time: 10-30 minutes (vs. 3-5 hours on CPU).

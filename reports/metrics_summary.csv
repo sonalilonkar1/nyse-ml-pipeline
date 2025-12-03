@@ -1,0 +1,2 @@
+window,fold,model,test_rmse,test_r2,eval_rmse,eval_r2,metrics_file
+3,0,ridge_cv,1.747052333237196,0.9990874161956744,2.3083181179654946,0.9994957930272471,metrics_window_3_fold_0.json

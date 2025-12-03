@@ -3,6 +3,8 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.neural_network import MLPRegressor
 
 from .lstm import LSTMRegressor
 
@@ -31,9 +33,27 @@ def _create_xgboost_regressor(**kwargs):
         ) from exc
 
 
+def _create_random_forest_regressor(**kwargs):
+    """Factory function to create a Random Forest regressor."""
+    return RandomForestRegressor(**kwargs)
+
+
+def _create_gradient_boosting_regressor(**kwargs):
+    """Factory function to create a Gradient Boosting regressor."""
+    return GradientBoostingRegressor(**kwargs)
+
+
+def _create_mlp_regressor(**kwargs):
+    """Factory function to create an MLP regressor."""
+    return MLPRegressor(**kwargs)
+
+
 MODEL_REGISTRY = {
     "linear_regression": LinearRegression,
     "polynomial_regression": _create_polynomial_regression,
+    "random_forest_regressor": _create_random_forest_regressor,
+    "gradient_boosting_regressor": _create_gradient_boosting_regressor,
+    "mlp_regressor": _create_mlp_regressor,
     "xgboost_regressor": _create_xgboost_regressor,
     "lstm_regressor": LSTMRegressor,
 }

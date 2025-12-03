@@ -1,4 +1,0 @@
-name: polynomial_regression
-params:
-  alpha: 10
-  degree: 2

@@ -107,6 +107,10 @@ def main():
         y = X["target"]
         X = X.drop("target", axis=1)
 
+        logger.info(f"Saving full training set for window {window_size}...")
+        X.to_csv(processed_dir / f"X_train_window_{window_size}.csv", index=False)
+        y.to_csv(processed_dir / f"y_train_window_{window_size}.csv", index=False)
+
         logger.debug(f"Splitting train window {window_size} into training folds...")
         tscv = TimeSeriesSplit(n_splits=NUM_CROSS_VAL_SPLITS)
         for i, (train_idx, test_idx) in enumerate(tscv.split(X)):

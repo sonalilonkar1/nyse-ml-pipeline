@@ -21,8 +21,7 @@ from sklearn.pipeline import Pipeline
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 # Configuration
@@ -34,9 +33,7 @@ NORMALIZED_DATA_DIR = Path(__file__).parent.parent / "data" / "normalized"
 
 def create_pipeline():
     """Create a pipeline with StandardScaler."""
-    pipeline = Pipeline([
-        ('scaler', StandardScaler())
-    ])
+    pipeline = Pipeline([("scaler", StandardScaler())])
     return pipeline
 
 
@@ -93,18 +90,38 @@ def normalize_eval_data(window_size, pipeline):
         pipeline: Fitted pipeline
 
     Returns:
-        Tuple of (X_eval, y_eval) normalized
+        Tuple of (X_eval_normalized, y_eval, dates_eval)
     """
-    X_eval_file = PROCESSED_DATA_DIR / f"X_eval_window_{window_size}.csv"
-    y_eval_file = PROCESSED_DATA_DIR / f"y_eval_window_{window_size}.csv"
-
-    X_eval = pd.read_csv(X_eval_file)
-    y_eval = pd.read_csv(y_eval_file)
+    X_eval = pd.read_csv(PROCESSED_DATA_DIR / f"X_eval_window_{window_size}.csv")
+    y_eval = pd.read_csv(PROCESSED_DATA_DIR / f"y_eval_window_{window_size}.csv")
+    dates_eval = pd.read_csv(
+        PROCESSED_DATA_DIR / f"dates_eval_window_{window_size}.csv"
+    )
 
     X_eval_normalized = pipeline.transform(X_eval)
     X_eval_normalized = pd.DataFrame(X_eval_normalized, columns=X_eval.columns)
 
-    return X_eval_normalized, y_eval
+    return X_eval_normalized, y_eval, dates_eval
+
+
+def normalize_full_train_data(window_size, pipeline):
+    """
+    Normalize full training data using a fitted pipeline.
+
+    Args:
+        window_size: Size of the sliding window (2-5)
+        pipeline: Fitted pipeline
+
+    Returns:
+        Tuple of (X_train_normalized, y_train)
+    """
+    X_train = pd.read_csv(PROCESSED_DATA_DIR / f"X_train_window_{window_size}.csv")
+    y_train = pd.read_csv(PROCESSED_DATA_DIR / f"y_train_window_{window_size}.csv")
+
+    X_train_normalized = pipeline.transform(X_train)
+    X_train_normalized = pd.DataFrame(X_train_normalized, columns=X_train.columns)
+
+    return X_train_normalized, y_train
 
 
 def main():
@@ -117,9 +134,9 @@ def main():
 
     # Process each window size
     for window_size in WINDOW_SIZES:
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info(f"Processing window size: {window_size}")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
 
         window_dir = NORMALIZED_DATA_DIR / f"window_{window_size}"
         window_dir.mkdir(parents=True, exist_ok=True)
@@ -132,8 +149,8 @@ def main():
             pipeline = create_pipeline()
 
             # Normalize this fold's data
-            X_train_norm, X_test_norm, y_train, y_test, pipeline = normalize_window_fold(
-                window_size, fold, pipeline, fit=True
+            X_train_norm, X_test_norm, y_train, y_test, pipeline = (
+                normalize_window_fold(window_size, fold, pipeline, fit=True)
             )
 
             # Save normalized train/test data
@@ -150,19 +167,33 @@ def main():
 
             logger.info(f"  Saved fold {fold} data and pipeline")
 
-        # Normalize eval data (use pipeline from fold 0 as representative)
-        logger.info(f"\nNormalizing eval data for window {window_size}...")
+        # Use pipeline from fold 0 as representative for eval and full train
+        logger.info(
+            f"\nNormalizing eval and full train data for window {window_size}..."
+        )
         pipeline_fold0 = joblib.load(window_dir / "fold_0" / "scaler_pipeline.pkl")
-        X_eval_norm, y_eval = normalize_eval_data(window_size, pipeline_fold0)
 
+        # Normalize eval data
+        X_eval_norm, y_eval, dates_eval = normalize_eval_data(
+            window_size, pipeline_fold0
+        )
         X_eval_norm.to_csv(window_dir / "X_eval.csv", index=False)
         y_eval.to_csv(window_dir / "y_eval.csv", index=False)
-        logger.info(f"  Saved eval data")
+        dates_eval.to_csv(window_dir / "dates_eval.csv", index=False)
+        logger.info(f"  Saved eval data and dates")
 
-    logger.info(f"\n{'='*60}")
+        # Normalize full training data
+        X_train_full_norm, y_train_full = normalize_full_train_data(
+            window_size, pipeline_fold0
+        )
+        X_train_full_norm.to_csv(window_dir / "X_train.csv", index=False)
+        y_train_full.to_csv(window_dir / "y_train.csv", index=False)
+        logger.info(f"  Saved full training data")
+
+    logger.info(f"\n{'=' * 60}")
     logger.info("Normalization pipeline complete!")
     logger.info(f"Normalized data saved to: {NORMALIZED_DATA_DIR}")
-    logger.info(f"{'='*60}")
+    logger.info(f"{'=' * 60}")
 
 
 if __name__ == "__main__":

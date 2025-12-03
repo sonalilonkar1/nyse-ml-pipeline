@@ -21,7 +21,7 @@ MAX_WINDOW_SIZE = 5
 NUM_CROSS_VAL_SPLITS = 5
 
 
-def split_with_window_size(df, size):
+def split_with_window_size(df, size, keep_date=False):
     df["target"] = df.groupby("symbol")["close"].pct_change(-1)
     logger.debug(df.head())
 
@@ -34,9 +34,12 @@ def split_with_window_size(df, size):
 
     logger.debug(f"Creating final df for window size {size}")
     df_temp = df.dropna()
-    X = df_temp[
-        [col for col in df_temp.columns if col not in ["date", "symbol"] + FEATURES]
-    ]
+
+    exclude_cols = ["symbol"] + FEATURES
+    if not keep_date:
+        exclude_cols.append("date")
+
+    X = df_temp[[col for col in df_temp.columns if col not in exclude_cols]]
     logger.debug(f"final df:\n{X.head(6)}")
 
     return X
@@ -76,17 +79,21 @@ def main():
 
         logger.debug(f"Copying eval for window {window_size}...")
         df_temp = eval.copy()
-        X_eval = split_with_window_size(df_temp, window_size)
+        X_eval = split_with_window_size(df_temp, window_size, keep_date=True)
 
         logger.debug(
             f"Splitting eval window {window_size} into features and target dfs..."
         )
         y_eval = X_eval["target"]
-        X_eval = X_eval.drop("target", axis=1)
+        dates_eval = X_eval["date"]
+        X_eval = X_eval.drop(["target", "date"], axis=1)
 
         logger.debug(f"Saving final df for window size {window_size}")
         y_eval.to_csv(processed_dir / f"y_eval_window_{window_size}.csv", index=False)
         X_eval.to_csv(processed_dir / f"X_eval_window_{window_size}.csv", index=False)
+        dates_eval.to_csv(
+            processed_dir / f"dates_eval_window_{window_size}.csv", index=False
+        )
 
         logger.debug(f"Creating window {window_size} train/test set...")
 
@@ -99,6 +106,10 @@ def main():
         )
         y = X["target"]
         X = X.drop("target", axis=1)
+
+        logger.info(f"Saving full training set for window {window_size}...")
+        X.to_csv(processed_dir / f"X_train_window_{window_size}.csv", index=False)
+        y.to_csv(processed_dir / f"y_train_window_{window_size}.csv", index=False)
 
         logger.debug(f"Splitting train window {window_size} into training folds...")
         tscv = TimeSeriesSplit(n_splits=NUM_CROSS_VAL_SPLITS)

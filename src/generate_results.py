@@ -169,6 +169,7 @@ def plot_model_comparison(
         )
 
     ax.axhline(y=0, color="gray", linestyle="--", alpha=0.5)
+    ax.set_ylim(top=0)
     ax.set_ylabel("R^2")
     ax.set_title(f"Model Comparison: Best R^2 by Window ({config_name})")
     plt.xticks(rotation=45, ha="right")
@@ -204,18 +205,19 @@ def generate_all_plots(
     ema_span: int = DEFAULT_EMA_SPAN,
 ) -> None:
     """Generate plots for all models with eval results."""
+    # Generate bucketed R^2 plots for full_experiments
     for model_dir in results_dir.iterdir():
         if not model_dir.is_dir():
             continue
-        eval_dir = model_dir / config_name / "eval"
+        eval_dir = model_dir / "full_experiments" / "eval"
         if not eval_dir.exists():
             continue
         logger.info(f"Generating plots for {model_dir.name}...")
         generate_model_plots(
-            model_dir.name, config_name, bucket_days, ema_span, results_dir
+            model_dir.name, "full_experiments", bucket_days, ema_span, results_dir
         )
 
-    # Generate comparison plot
+    # Generate comparison plot (always uses full_experiments)
     comparison_path = results_dir / "full_experiments" / "model_comparison.png"
     plot_model_comparison(results_dir, "full_experiments", comparison_path)
 
@@ -231,8 +233,8 @@ def main():
     parser.add_argument(
         "--config",
         type=str,
-        default="baseline",
-        help="Config name (default: baseline)",
+        default="full_experiments",
+        help="Config name (default: full_experiments)",
     )
     parser.add_argument(
         "--bucket-days",

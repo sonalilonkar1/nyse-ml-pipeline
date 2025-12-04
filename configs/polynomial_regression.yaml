@@ -1,0 +1,9 @@
+config_name: polynomial_regression
+windows: [2, 3, 4, 5]
+models:
+  - name: polynomial_regression
+    params:
+      degree: 2
+      alpha: 10
+metrics: [mse, mae, r2]
+save_models: true

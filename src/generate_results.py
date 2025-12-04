@@ -216,8 +216,8 @@ def generate_all_plots(
         )
 
     # Generate comparison plot
-    comparison_path = results_dir / config_name / "model_comparison.png"
-    plot_model_comparison(results_dir, config_name, comparison_path)
+    comparison_path = results_dir / "full_experiments" / "model_comparison.png"
+    plot_model_comparison(results_dir, "full_experiments", comparison_path)
 
 
 def main():

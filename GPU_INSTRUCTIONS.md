@@ -29,7 +29,7 @@ Run this in a cell:
 ### Step 4: Run the Training
 Execute:
 ```
-!python -m src.main --config configs/xgb_lstm.yaml
+!python -m src.main --config configs/all_models.yaml
 ```
 - This will train all models (Linear, Polynomial, Random Forest, Gradient Boosting, MLP, XGBoost, LSTM) with cross-validation.
 - XGBoost and LSTM will use GPU acceleration for much faster training.

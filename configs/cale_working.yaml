@@ -1,0 +1,7 @@
+config_name: baseline
+windows: [2, 3, 4, 5]
+models:
+  - name: ridge_regression
+    params: 
+      alpha: 100.0
+metrics: [mse, mae, r2]

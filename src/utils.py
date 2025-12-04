@@ -10,28 +10,56 @@ def load_config(path: Path) -> dict:
         return yaml.safe_load(f)
 
 
-def save_results(
-    results_df: pd.DataFrame,
+def save_cv_summary(
     summary_df: pd.DataFrame,
     model_config: dict,
-    experiment_name: str,
-    results_dir: Path,
+    experiment_dir: Path,
 ) -> None:
+    """Save CV summary with timestamp."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    model_name = model_config["name"]
-    
-    # Organize by model first, then by experiment timestamp
-    model_dir = results_dir / model_name / f"{experiment_name}_{timestamp}"
-    model_dir.mkdir(parents=True, exist_ok=True)
+    cv_dir = experiment_dir / "cv"
+    cv_dir.mkdir(parents=True, exist_ok=True)
 
-    results_df.to_csv(model_dir / "results.csv", index=False)
-    summary_df.to_csv(model_dir / "results_summary.csv", index=False)
+    summary_df.to_csv(cv_dir / f"summary_{timestamp}.csv", index=False)
 
-    with open(model_dir / "model_config.yaml", "w") as f:
+    with open(cv_dir / f"config_{timestamp}.yaml", "w") as f:
         yaml.dump(model_config, f)
 
 
+def save_train_results(
+    results_df: pd.DataFrame,
+    summary_df: pd.DataFrame,
+    model_config: dict,
+    experiment_dir: Path,
+) -> None:
+    """Save training results and summary."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    train_dir = experiment_dir / "train"
+    train_dir.mkdir(parents=True, exist_ok=True)
+
+    results_df.to_csv(train_dir / f"results_{timestamp}.csv", index=False)
+    summary_df.to_csv(train_dir / f"summary_{timestamp}.csv", index=False)
+
+    with open(train_dir / f"config_{timestamp}.yaml", "w") as f:
+        yaml.dump(model_config, f)
+
+
+def save_eval_results(
+    results_df: pd.DataFrame,
+    summary_df: pd.DataFrame,
+    experiment_dir: Path,
+) -> None:
+    """Save evaluation results and summary."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    eval_dir = experiment_dir / "eval"
+    eval_dir.mkdir(parents=True, exist_ok=True)
+
+    results_df.to_csv(eval_dir / f"results_{timestamp}.csv", index=False)
+    summary_df.to_csv(eval_dir / f"summary_{timestamp}.csv", index=False)
+
+
 def summarize_results(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate results across folds/windows."""
     return (
         results_df.groupby(["model", "window"])
         .agg(

@@ -1,6 +1,6 @@
 """Model registry for experiment configs."""
 
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
@@ -11,10 +11,12 @@ from .lstm import LSTMRegressor
 
 def _create_polynomial_regression(degree=2, **kwargs):
     """Factory function to create a polynomial regression pipeline."""
-    return Pipeline([
-        ('poly', PolynomialFeatures(degree=degree, include_bias=False)),
-        ('linear', LinearRegression(**kwargs))
-    ])
+    return Pipeline(
+        [
+            ("poly", PolynomialFeatures(degree=degree, include_bias=False)),
+            ("linear", LinearRegression(**kwargs)),
+        ]
+    )
 
 
 def _create_xgboost_regressor(**kwargs):
@@ -50,6 +52,7 @@ def _create_mlp_regressor(**kwargs):
 
 MODEL_REGISTRY = {
     "linear_regression": LinearRegression,
+    "ridge_regression": Ridge,
     "polynomial_regression": _create_polynomial_regression,
     "random_forest_regressor": _create_random_forest_regressor,
     "gradient_boosting_regressor": _create_gradient_boosting_regressor,

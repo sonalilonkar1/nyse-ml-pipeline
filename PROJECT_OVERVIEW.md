@@ -36,7 +36,11 @@ cmpe_257_project/
 ## Detailed File Explanations
 
 ### Configuration Files (`configs/`)
+<<<<<<< HEAD
 - **`xgb_lstm.yaml`**: YAML config for comprehensive model experiments. Defines all available models with parameters (linear, polynomial, tree-based, neural networks, XGBoost, LSTM), windows (2-5 days), metrics (MSE, MAE, R²), and options like `save_models`. Used by `src/main.py` for reproducible training.
+=======
+- **`all_models.yaml`**: YAML config for comprehensive model experiments. Defines all models including linear regression, polynomial regression (degree=2, alpha=10), random forest, gradient boosting, MLP, XGBoost, and LSTM with their respective parameters (e.g., `n_estimators` for tree models, `hidden_layer_sizes` for MLP, `hidden_size` for LSTM), windows (2-5 days), metrics (MSE, MAE, R²), and options like `save_models`. Used by `src/main.py` for reproducible training.
+>>>>>>> upstream/main
 
 ### Data Directories (`data/`)
 - **`raw/`**: Contains original Kaggle CSV files (e.g., `prices.csv`, `fundamentals.csv`). These are the unprocessed datasets downloaded from Kaggle.

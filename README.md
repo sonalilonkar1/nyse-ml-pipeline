@@ -193,8 +193,8 @@ Use the orchestrator in `src/main.py` to train every model listed in a YAML conf
 # Baseline linear + polynomial regression
 python -m src.main --config configs/baseline.yaml
 
-# Advanced XGBoost + LSTM experiments (saves fitted models)
-python -m src.main --config configs/xgb_lstm.yaml
+# Advanced XGBoost + LSTM experiments and other models (saves fitted models)
+python -m src.main --config configs/all_models.yaml.yaml
 ```
 
 Config anatomy:
@@ -305,7 +305,7 @@ See `requirements.txt` for specific versions.
 - **Solution:** The full dataset is large. If needed, modify scripts to process in batches or reduce data sample.
 
 ## Authors & Notes
-- Cale Payson, Sonali Lonkar
+- Cale Payson, Sonali Lonkar, Ramya Gopalaswamy, Pranav Sehgal
 - Repository: CMPE 257 Course Project
 - Data source: Kaggle
 - Processing: Custom walk-forward validation pipeline

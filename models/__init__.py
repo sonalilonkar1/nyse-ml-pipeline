@@ -9,12 +9,25 @@ from sklearn.neural_network import MLPRegressor
 from .lstm import LSTMRegressor
 
 
-def _create_polynomial_regression(degree=2, **kwargs):
-    """Factory function to create a polynomial regression pipeline."""
+def _create_polynomial_regression(degree=2, alpha=None, **kwargs):
+    """Factory function to create a polynomial regression pipeline.
+    
+    Args:
+        degree: Polynomial degree (default: 2)
+        alpha: Regularization strength for Ridge. If None, uses LinearRegression.
+               If provided, uses Ridge with the specified alpha.
+        **kwargs: Additional arguments passed to the regressor
+    """
+    # If alpha is provided, use Ridge regression; otherwise use LinearRegression
+    if alpha is not None:
+        regressor = Ridge(alpha=alpha, **kwargs)
+    else:
+        regressor = LinearRegression(**kwargs)
+    
     return Pipeline(
         [
             ("poly", PolynomialFeatures(degree=degree, include_bias=False)),
-            ("linear", LinearRegression(**kwargs)),
+            ("regressor", regressor),
         ]
     )
 

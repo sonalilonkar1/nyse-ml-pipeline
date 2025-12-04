@@ -1,0 +1,10 @@
+config_name: mlp
+windows: [2, 3, 4, 5]
+models:
+  - name: mlp_regressor
+    params:
+      hidden_layer_sizes: [256, 128]
+      max_iter: 500
+      random_state: 42
+metrics: [mse, mae, r2]
+save_models: true
